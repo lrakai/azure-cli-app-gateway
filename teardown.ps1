@@ -1,2 +1,2 @@
-$Lab="app-gateway-lab"
+$Lab="app-gw-lab"
 Remove-AzureRmResourceGroup -Force -Name $Lab

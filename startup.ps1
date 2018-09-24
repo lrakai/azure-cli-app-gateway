@@ -1,4 +1,4 @@
-$Lab="app-gateway-lab"
+$Lab="app-gw-lab"
 $Region="WestUS2"
 Login-AzureRmAccount
 New-AzureRmResourceGroup -Name $Lab -Location $Region
