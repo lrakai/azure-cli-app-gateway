@@ -1,0 +1,115 @@
+{
+    "parameters": {
+        "allowedLocations": {
+            "type": "array",
+            "metadata": {
+                "description": "The list of locations that can be specified when deploying resources",
+                "strongType": "location",
+                "displayName": "Allowed locations"
+            }
+        },
+        "allowedServices": {
+            "type": "array",
+            "metadata": {
+                "description": "The list of allowed services",
+                "displayName": "Allowed services"
+            }
+        },
+        "allowedVmSkus": {
+            "type": "array",
+            "metadata": {
+                "description": "The list of allowed VM SKUs",
+                "displayName": "Allowed VM SKUs"
+            }
+        },
+        "allowedVmssSkuTiers": {
+            "type": "array",
+            "metadata": {
+                "description": "The list of allowed VMSS SKU Tiers",
+                "displayName": "Allowed VMSS SKU Tiers"
+            }
+        }
+    },
+    "displayName": "Allowed locations, services, VM SKUs, and VM SKU Tiers",
+    "description": "This policy restrict the allowed locations, services, VM SKUs, and VM SKU Tiers.",
+    "policyRule": {
+        "if": {
+            "anyOf": [
+                {
+                    "not": {
+                        "field": "type",
+                        "in": "[parameters('allowedServices')]"
+                    }
+                },
+                {
+                    "not": {
+                        "field": "location",
+                        "in": "[parameters('allowedLocations')]"
+                    }
+                },
+                {
+                    "allOf": [
+                        {
+                            "field": "type",
+                            "equals": "Microsoft.Compute/virtualMachineScaleSets"
+                        },
+                        {
+                            "not": {
+                                "field": "Microsoft.Compute/virtualMachineScaleSets/sku.name",
+                                "in": "[parameters('allowedVmSkus')]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "field": "type",
+                            "equals": "Microsoft.Compute/virtualMachineScaleSets"
+                        },
+                        {
+                            "not": {
+                                "field": "Microsoft.Compute/virtualMachineScaleSets/sku.tier",
+                                "in": "[parameters('allowedVmssSkuTiers')]"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "then": {
+            "effect": "deny"
+        }
+    },
+    "parameters_values": {
+        "allowedLocations": {
+            "value": [
+                "{RGLocation}",
+                "WestUS2"
+            ]
+        },
+        "allowedServices": {
+            "value": [
+                "Microsoft.Compute/virtualMachineScaleSets",
+                "Microsoft.Storage/storageAccounts",
+                "Microsoft.Network/networkSecurityGroups",
+                "Microsoft.Network/publicIpAddresses",
+                "Microsoft.Network/networkInterfaces",
+                "Microsoft.Network/virtualNetworks",
+                "Microsoft.Compute/virtualMachineScaleSets/extensions",
+                "Microsoft.Compute/disks",
+                "Microsoft.Network/applicationGateways"
+            ]
+        },
+        "allowedVmSkus": {
+            "value": [
+                "Standard_B1s"
+            ]
+        },
+        "allowedVmssSkuTiers": {
+            "value": [
+                "Standard"
+            ]
+        }
+    }
+}
