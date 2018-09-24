@@ -1,0 +1,193 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "vmssName": {
+            "type": "string",
+            "defaultValue": "website-vmss"
+        },
+        "vmSku": {
+            "type": "string",
+            "defaultValue": "Standard_B1s"
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "student"
+        },
+        "instanceCount": {
+            "type": "string",
+            "defaultValue": "2"
+        },
+        "image": {
+            "type": "object",
+            "defaultValue": {
+                "sku": "7.2",
+                "publisher": "OpenLogic",
+                "version": "latest",
+                "offer": "CentOS"
+            }
+        },
+        "singlePlacementGroup": {
+            "type": "string",
+            "defaultValue": "false"
+        },
+        "priority": {
+            "type": "string",
+            "defaultValue": "Regular"
+        },
+        "enableAcceleratedNetworking": {
+            "type": "string",
+            "defaultValue": "false"
+        },
+        "upgradeMode": {
+            "type": "string",
+            "defaultValue": "Manual"
+        },
+        "adminPassword": {
+            "type": "string",
+            "defaultValue": "1Cloud_Academy_Labs!"
+        },
+        "zones": {
+            "type": "array",
+            "defaultValue": [
+                "1",
+                "2"
+            ]
+        },
+        "spreadingAlgorithmPlatformFaultDomainCount": {
+            "type": "string",
+            "defaultValue": "5"
+        },
+        "zoneBalance": {
+            "type": "string",
+            "defaultValue": "false"
+        },
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "app"
+        }
+    },
+    "variables": {
+        "namingInfix": "[toLower(substring(concat(parameters('vmssName'), uniqueString(resourceGroup().id)), 0, 9))]",
+        "networkApiVersion": "2018-01-01",
+        "computeApiVersion": "2017-12-01",
+        "networkSecurityGroupName": "[concat(parameters('vmssName'), 'nsg')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('networkApiVersion')]",
+            "name": "[parameters('vnetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[parameters('location')]",
+            "properties": {
+                "subnets": [
+                    {
+                        "name": "web",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                            }
+                        }
+                    }
+                ],
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[variables('networkApiVersion')]",
+            "name": "[variables('networkSecurityGroupName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "allowHTTP",
+                        "properties": {
+                            "description": "Allow web traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1000,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[parameters('vmssName')]",
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "apiVersion": "[variables('computeApiVersion')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+            ],
+            "sku": {
+                "name": "[parameters('vmSku')]",
+                "tier": "Standard",
+                "capacity": "[int(parameters('instanceCount'))]"
+            },
+            "properties": {
+                "overprovision": "true",
+                "upgradePolicy": {
+                    "mode": "[parameters('upgradeMode')]"
+                },
+                "singlePlacementGroup": "[parameters('singlePlacementGroup')]",
+                "virtualMachineProfile": {
+                    "storageProfile": {
+                        "imageReference": "[parameters('image')]",
+                        "osDisk": {
+                            "createOption": "FromImage",
+                            "caching": "ReadWrite"
+                        }
+                    },
+                    "priority": "[parameters('priority')]",
+                    "osProfile": {
+                        "computerNamePrefix": "[variables('namingInfix')]",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "adminPassword": "[parameters('adminPassword')]"
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[concat(parameters('vmssName'), 'Nic')]",
+                                "properties": {
+                                    "primary": "true",
+                                    "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "[concat(parameters('vmssName'), 'IpConfig')]",
+                                            "properties": {
+                                                "subnet": {
+                                                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'web')]"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "platformFaultDomainCount": "[int(parameters('spreadingAlgorithmPlatformFaultDomainCount'))]",
+                "zoneBalance": "[parameters('zoneBalance')]"
+            },
+            "zones": "[parameters('zones')]"
+        }
+    ]
+}
