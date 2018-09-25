@@ -53,7 +53,7 @@
         },
         "upgradeMode": {
             "type": "string",
-            "defaultValue": "Manual"
+            "defaultValue": "Automatic"
         },
         "adminPassword": {
             "type": "string",
