@@ -1,4 +1,35 @@
 {
+    "permissions": [
+        {
+            "actions": [
+                "*"
+            ],
+            "notActions": [
+                "Microsoft.Authorization/*/Delete",
+                "Microsoft.Authorization/*/Write",
+                "Microsoft.Authorization/elevateAccess/Action",
+                "Microsoft.MarketplaceOrdering/*",
+                "Microsoft.Compute/virtualMachineScaleSets/scale/action",
+                "Microsoft.Compute/virtualMachineScaleSets/write",
+                "Microsoft.Compute/virtualMachineScaleSets/reimageAll/action",
+                "Microsoft.Compute/virtualMachineScaleSets/reimage/action",
+                "Microsoft.Compute/virtualMachineScaleSets/redeploy/action",
+                "Microsoft.Compute/virtualMachineScaleSets/forceRecoveryServiceFabricPlatformUpdateDomainWalk/action",
+                "Microsoft.Compute/virtualMachineScaleSets/osRollingUpgrade/action",
+                "Microsoft.Compute/virtualMachineScaleSets/performMaintenance/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/reimage/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/reimageAll/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/redeploy/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/performMaintenance/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/write",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/delete",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/start/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/powerOff/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/restart/action",
+                "Microsoft.Compute/virtualMachineScaleSets/virtualMachines/deallocate/action"
+            ]
+        }
+    ],
     "parameters": {
         "allowedLocations": {
             "type": "array",
@@ -28,10 +59,24 @@
                 "description": "The list of allowed VMSS SKU Tiers",
                 "displayName": "Allowed VMSS SKU Tiers"
             }
+        },
+        "allowedAgSkuCapacities": {
+            "type": "array",
+            "metadata": {
+                "description": "The list of allowed Application Gateway capacities",
+                "displayName": "Allowed AG Capacities"
+            }
+        },
+        "allowedAgSkuTiers": {
+            "type": "array",
+            "metadata": {
+                "description": "The list of allowed Application Gateway tiers",
+                "displayName": "Allowed AG Tiers"
+            }
         }
     },
-    "displayName": "Allowed locations, services, VM SKUs, and VM SKU Tiers",
-    "description": "This policy restrict the allowed locations, services, VM SKUs, and VM SKU Tiers.",
+    "displayName": "Allowed locations, services, VM SKUs, VM SKU Tiers, and Application Gateway constraints",
+    "description": "This policy restricts the allowed locations, services, VM SKUs, VM SKU Tiers, and Application Gateway settings.",
     "policyRule": {
         "if": {
             "anyOf": [
@@ -74,6 +119,34 @@
                             }
                         }
                     ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "field": "type",
+                            "equals": "Microsoft.Compute/virtualMachineScaleSets"
+                        },
+                        {
+                            "not": {
+                                "field": "Microsoft.Network/applicationGateways/sku.capacity",
+                                "in": "[parameters('allowedAgSkuCapacities')]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "allOf": [
+                        {
+                            "field": "type",
+                            "equals": "Microsoft.Compute/virtualMachineScaleSets"
+                        },
+                        {
+                            "not": {
+                                "field": "Microsoft.Network/applicationGateways/sku.tier",
+                                "in": "[parameters('allowedAgSkuTiers')]"
+                            }
+                        }
+                    ]
                 }
             ]
         },
@@ -109,6 +182,16 @@
         "allowedVmssSkuTiers": {
             "value": [
                 "Standard"
+            ]
+        },
+        "allowedAgSkuCapacities": {
+            "value": [
+                "1"
+            ]
+        },
+        "allowedAgSkuTiers": {
+            "value": [
+                "Standard_Small"
             ]
         }
     }
