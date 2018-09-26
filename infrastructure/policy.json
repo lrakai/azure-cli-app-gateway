@@ -141,7 +141,7 @@
                         },
                         {
                             "not": {
-                                "field": "Microsoft.Network/applicationGateways/sku.tier",
+                                "field": "Microsoft.Network/applicationGateways/sku.name",
                                 "in": "[parameters('allowedAgSkuTiers')]"
                             }
                         }
