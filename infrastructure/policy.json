@@ -10,7 +10,6 @@
                 "Microsoft.Authorization/elevateAccess/Action",
                 "Microsoft.MarketplaceOrdering/*",
                 "Microsoft.Compute/virtualMachineScaleSets/scale/action",
-                "Microsoft.Compute/virtualMachineScaleSets/write",
                 "Microsoft.Compute/virtualMachineScaleSets/reimageAll/action",
                 "Microsoft.Compute/virtualMachineScaleSets/reimage/action",
                 "Microsoft.Compute/virtualMachineScaleSets/redeploy/action",
