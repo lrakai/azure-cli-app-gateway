@@ -123,7 +123,7 @@
                     "allOf": [
                         {
                             "field": "type",
-                            "equals": "Microsoft.Compute/applicationGateways"
+                            "equals": "Microsoft.Network/applicationGateways"
                         },
                         {
                             "not": {
@@ -137,7 +137,7 @@
                     "allOf": [
                         {
                             "field": "type",
-                            "equals": "Microsoft.Compute/applicationGateways"
+                            "equals": "Microsoft.Network/applicationGateways"
                         },
                         {
                             "not": {
