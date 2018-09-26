@@ -41,7 +41,7 @@
         },
         "singlePlacementGroup": {
             "type": "string",
-            "defaultValue": "false"
+            "defaultValue": "true"
         },
         "priority": {
             "type": "string",
